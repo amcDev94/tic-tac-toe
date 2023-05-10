@@ -1,70 +1,35 @@
 import { useState } from "react";
+import confetti from "canvas-confetti";
 
-const TURNS = {
-  X: "x",
-  O: "o",
-};
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? "is-selected" : ""}`;
-
-  const handleOnClick = () => {
-    updateBoard(index);
-  };
-
-  return (
-    <div onClick={handleOnClick} className={className}>
-      {children}
-    </div>
-  );
-};
-
-const WINNER_COMBOS = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [0, 1, 2],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
+import { Square } from "./components/Square";
+import { TURNS } from "./constants";
+import { checkWinnerFrom, checkEndGame } from "./logic/boardLogic";
+import { WinnerModal } from "./components/WinnerModal";
+import Board from "./components/Board";
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null));
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem("board");
+    return boardFromStorage
+      ? JSON.parse(boardFromStorage)
+      : Array(9).fill(null);
+  });
 
-  const [turn, setTurn] = useState(TURNS.X);
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem("turn");
+    return turnFromStorage ?? TURNS.X;
+  });
 
   // null es que no hay ganador y false es que hay un empate
   const [winner, setWinner] = useState(null);
-
-  // Check winner
-  const checkWinner = (boardToCheck) => {
-    // revisamos todas las combinaciones ganadoras
-    // para ver si x / o ganó
-    for (const combo of WINNER_COMBOS) {
-      const [a, b, c] = combo;
-      if (
-        boardToCheck[a] &&
-        boardToCheck[a] === boardToCheck[b] &&
-        boardToCheck[a] === boardToCheck[c]
-      ) {
-        return boardToCheck[a];
-      }
-    }
-
-    return null;
-  };
 
   const resetGame = () => {
     setBoard(Array(9).fill(null));
     setTurn(TURNS.X);
     setWinner(null);
-  };
 
-  const checkEndGame = (newBoard) => {
-    return newBoard.every((square) => square !== null);
+    window.localStorage.removeItem("board");
+    window.localStorage.removeItem("turn");
   };
 
   const updateBoard = (index) => {
@@ -83,9 +48,14 @@ function App() {
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
     setTurn(newTurn);
 
+    // Guardar aquí partida (En el localStorage sólo se pueden guardar Strings)
+    window.localStorage.setItem("board", JSON.stringify(newBoard));
+    window.localStorage.setItem("turn", newTurn);
+
     // Reviso si hay ganador
-    const newWinner = checkWinner(newBoard);
+    const newWinner = checkWinnerFrom(newBoard);
     if (newWinner) {
+      confetti();
       setWinner(newWinner);
     } else if (checkEndGame(newBoard)) {
       setWinner(false);
@@ -95,34 +65,16 @@ function App() {
   return (
     <main className="board">
       <h1>Tic tac toe</h1>
-      <button onClick={resetGame}>Reset del juego</button>
-      <section className="game">
-        {board.map((cell, index) => {
-          return (
-            <Square key={index} index={index} updateBoard={updateBoard}>
-              {board[index]}
-            </Square>
-          );
-        })}
-      </section>
+      <button className="button" onClick={resetGame}>
+        Reset del juego
+      </button>
+      <Board board={board} updateBoard={updateBoard} />
       <section className="turn">
         <Square isSelected={turn === TURNS.X}>{TURNS.X}</Square>
         <Square isSelected={turn === TURNS.O}>{TURNS.O}</Square>
       </section>
 
-      {winner !== null && (
-        <section className="winner">
-          <div className="text">
-            <h2>{winner === false ? "Empate" : `Ha ganado la ${winner}`}</h2>
-            <header className="win">
-              {winner && <Square>{winner}</Square>}
-            </header>
-            <footer>
-              <button onClick={resetGame}>Empezar de nuevo</button>
-            </footer>
-          </div>
-        </section>
-      )}
+      <WinnerModal resetGame={resetGame} winner={winner} />
     </main>
   );
 }

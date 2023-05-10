@@ -22,6 +22,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #213547;
 }
 
 * {
@@ -39,11 +40,29 @@ body {
 .board h1 {
   color: #eee;
   margin-bottom: 16px;
+  font-size: 40px;
+  margin-top: 0px;
+}
+
+.button {
+  padding: 7px;
+  background-color: cyan;
+  border-radius: 7px;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: chartreuse;
+  transition: 50ms;
+  font-weight: 500;
 }
 
 .game {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  margin: 10px;
 }
 
 .square {
@@ -54,19 +73,25 @@ body {
   place-items: center;
   cursor: pointer;
   font-size: 48px;
-  background-color: #213547;
-  color: #eee;
+  background-color: #fff;
+  color: #213547;
+  margin: 5px;
+}
+
+.turn {
+  display: flex;
+  justify-content: center;
 }
 
 .is-selected {
-  color: #fff;
+  color: #213547;
   background: #09f;
 }
 
 .winner {
   position: absolute;
   width: 100vw;
-  height: 100 vh;
+  height: 110vh;
   top: 0;
   left: 0;
   display: grid;
@@ -74,10 +99,28 @@ body {
   background-color: rgba(0, 0, 0, 0.7);
 }
 
+.text {
+  display: block;
+  align-items: center;
+}
+
+.text h2 {
+  font-size: 50px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.win {
+  width: 95%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    background-color: #213547;
+    color: #ffffff;
   }
   a:hover {
     color: #747bff;
